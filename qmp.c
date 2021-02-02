@@ -125,6 +125,10 @@ main(int argc, char *argv[])
                 case 'j':
                     qms_seek(&seeker, mark);
                     break;
+                case '0': case '1': case '2': case '3': case '4':
+                case '5': case '6': case '7': case '8': case '9':
+                    qms_seek(&seeker, max_smp_i * (key-'0') / 10);
+                    break;
             }
         }
     }
