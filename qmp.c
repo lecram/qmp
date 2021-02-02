@@ -1,11 +1,37 @@
 #include <unistd.h>
 #include <stdio.h>
+#include <termios.h>
 
 #include "qms.h"
 #include "smf.h"
 
 #define NEVENTS     (1 << 16)
 Event midi_evs[NEVENTS];
+
+#define SEG_LEN 4410
+
+struct termios term_prev;
+
+void
+setup_terminal(struct termios *term_prev)
+{
+    struct termios term_raw;
+
+    /* disable echo and canonical mode */
+    tcgetattr(0, term_prev);
+    term_raw = *term_prev;
+    term_raw.c_lflag &= ~(ECHO | ICANON);
+    /* async read */
+    term_raw.c_cc[VMIN] = 0;
+    term_raw.c_cc[VTIME] = 0; /* in deciseconds */
+    tcsetattr(0, TCSAFLUSH, &term_raw);
+}
+
+void
+restore_terminal(struct termios *term_prev)
+{
+    tcsetattr(0, TCSAFLUSH, term_prev);
+}
 
 void
 qms_putsample(int16_t left, int16_t right)
@@ -14,11 +40,20 @@ qms_putsample(int16_t left, int16_t right)
     write(1, &right, 2);
 }
 
+void
+putsilence(unsigned int nsamples)
+{
+    while (nsamples--)
+        qms_putsample(0, 0);
+}
+
 int
 main(int argc, char *argv[])
 {
     Seeker seeker;
     unsigned int cur_sec, max_sec;
+    char key;
+    int paused, quit;
     int nevs = 0;
     if (argc < 2) {
         fprintf(stderr, "usage:\n  %s song.mid\n", argv[0]);
@@ -43,15 +78,33 @@ main(int argc, char *argv[])
         fprintf(stderr, "too many events\n");
         break;
     }
+    setup_terminal(&term_prev);
     max_sec = midi_evs[nevs-1].offset / R;
     qms_init();
     qms_load(&seeker, midi_evs, nevs);
     qms_seek(&seeker, 0*R);
-    while (!qms_play(&seeker, R>>2)) {
-        cur_sec = seeker.smp_i / R;
-        fprintf(stderr, " %02u:%02u/%02u:%02u\r",
-                cur_sec/60, cur_sec%60, max_sec/60, max_sec%60);
-        fflush(stderr);
+    paused = quit = 0;
+    while (!quit) {
+        if (!paused) {
+            quit = qms_play(&seeker, SEG_LEN);
+            cur_sec = seeker.smp_i / R;
+            fprintf(stderr, " %02u:%02u/%02u:%02u\r",
+                    cur_sec/60, cur_sec%60, max_sec/60, max_sec%60);
+            fflush(stderr);
+        } else {
+            putsilence(SEG_LEN);
+        }
+        if (read(0, &key, 1)) {
+            switch (key) {
+                case 'q':
+                    quit = 1;
+                    break;
+                case ' ':
+                    paused = !paused;
+                    break;
+            }
+        }
     }
+    restore_terminal(&term_prev);
     return 0;
 }
