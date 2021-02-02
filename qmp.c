@@ -47,11 +47,14 @@ putsilence(unsigned int nsamples)
         qms_putsample(0, 0);
 }
 
+#define seek_bck(n) qms_seek(&seeker, seeker.smp_i > (n) ? seeker.smp_i - (n) : 0)
+#define seek_fwd(n) qms_seek(&seeker, max_smp_i - seeker.smp_i > (n) ? seeker.smp_i + (n) : max_smp_i-1);
+
 int
 main(int argc, char *argv[])
 {
     Seeker seeker;
-    unsigned int cur_sec, max_sec;
+    unsigned int cur_sec, max_sec, max_smp_i;
     char key;
     int paused, quit;
     int nevs = 0;
@@ -79,10 +82,11 @@ main(int argc, char *argv[])
         break;
     }
     setup_terminal(&term_prev);
-    max_sec = midi_evs[nevs-1].offset / R;
+    max_smp_i = midi_evs[nevs-1].offset;
+    max_sec = max_smp_i / R;
     qms_init();
     qms_load(&seeker, midi_evs, nevs);
-    qms_seek(&seeker, 0*R);
+    qms_seek(&seeker, 0);
     paused = quit = 0;
     while (!quit) {
         if (!paused) {
@@ -101,6 +105,18 @@ main(int argc, char *argv[])
                     break;
                 case ' ':
                     paused = !paused;
+                    break;
+                case ',':
+                    seek_bck(5*R);
+                    break;
+                case '.':
+                    seek_fwd(5*R);
+                    break;
+                case '<':
+                    seek_bck(30*R);
+                    break;
+                case '>':
+                    seek_fwd(30*R);
                     break;
             }
         }
