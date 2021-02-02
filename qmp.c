@@ -55,6 +55,7 @@ main(int argc, char *argv[])
 {
     Seeker seeker;
     unsigned int cur_sec, max_sec, max_smp_i;
+    unsigned int mark = 0;
     char key;
     int paused, quit;
     int nevs = 0;
@@ -117,6 +118,12 @@ main(int argc, char *argv[])
                     break;
                 case '>':
                     seek_fwd(30*R);
+                    break;
+                case 'm':
+                    mark = seeker.smp_i;
+                    break;
+                case 'j':
+                    qms_seek(&seeker, mark);
                     break;
             }
         }
