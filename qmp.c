@@ -129,6 +129,15 @@ main(int argc, char *argv[])
                 case '5': case '6': case '7': case '8': case '9':
                     qms_seek(&seeker, max_smp_i * (key-'0') / 10);
                     break;
+                case 'z':
+                    seeker.dur = seeker.dur < 0xFF ? seeker.dur + 1 : 0xFF;
+                    break;
+                case 'x':
+                    seeker.dur = 15;
+                    break;
+                case 'c':
+                    seeker.dur = seeker.dur > 0x00 ? seeker.dur - 1 : 0x00;
+                    break;
             }
         }
     }
