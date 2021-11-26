@@ -101,43 +101,43 @@ main(int argc, char *argv[])
         }
         if (read(0, &key, 1)) {
             switch (key) {
-                case 'q':
-                    quit = 1;
-                    break;
-                case ' ':
-                    paused = !paused;
-                    break;
-                case ',':
-                    seek_bck(5*R);
-                    break;
-                case '.':
-                    seek_fwd(5*R);
-                    break;
-                case '<':
-                    seek_bck(30*R);
-                    break;
-                case '>':
-                    seek_fwd(30*R);
-                    break;
-                case 'm':
-                    mark = seeker.smp_i;
-                    break;
-                case 'j':
-                    qms_seek(&seeker, mark);
-                    break;
-                case '0': case '1': case '2': case '3': case '4':
-                case '5': case '6': case '7': case '8': case '9':
-                    qms_seek(&seeker, max_smp_i * (key-'0') / 10);
-                    break;
-                case 'z':
-                    seeker.dur = seeker.dur < 0xFF ? seeker.dur + 1 : 0xFF;
-                    break;
-                case 'x':
-                    seeker.dur = 15;
-                    break;
-                case 'c':
-                    seeker.dur = seeker.dur > 0x00 ? seeker.dur - 1 : 0x00;
-                    break;
+            case 'q':
+                quit = 1;
+                break;
+            case ' ':
+                paused = !paused;
+                break;
+            case ',':
+                seek_bck(5*R);
+                break;
+            case '.':
+                seek_fwd(5*R);
+                break;
+            case '<':
+                seek_bck(30*R);
+                break;
+            case '>':
+                seek_fwd(30*R);
+                break;
+            case 'm':
+                mark = seeker.smp_i;
+                break;
+            case 'j':
+                qms_seek(&seeker, mark);
+                break;
+            case '0': case '1': case '2': case '3': case '4':
+            case '5': case '6': case '7': case '8': case '9':
+                qms_seek(&seeker, max_smp_i * (key-'0') / 10);
+                break;
+            case 'z':
+                seeker.dur = seeker.dur < 0xFF ? seeker.dur + 1 : 0xFF;
+                break;
+            case 'x':
+                seeker.dur = 15;
+                break;
+            case 'c':
+                seeker.dur = seeker.dur > 0x00 ? seeker.dur - 1 : 0x00;
+                break;
             }
         }
     }
