@@ -59,11 +59,12 @@ main(int argc, char *argv[])
     char key;
     int paused, quit;
     int nevs = 0;
+    SMFError err;
     if (argc < 2) {
         fprintf(stderr, "usage:\n  %s song.mid\n", argv[0]);
         return 1;
     }
-    switch (qms_smf2evs(argv[1], midi_evs, NEVENTS, &nevs)) {
+    switch ((err = qms_smf2evs(argv[1], midi_evs, NEVENTS, &nevs))) {
     case SMF_OK:
         break;
     case SMF_NOFILE:
@@ -81,7 +82,11 @@ main(int argc, char *argv[])
     case SMF_TOOBIG:
         fprintf(stderr, "too many events\n");
         break;
+    default:
+        fprintf(stderr, "unknown error while loading file\n");
     }
+    if (err != SMF_OK)
+        return 1;
     setup_terminal(&term_prev);
     max_smp_i = midi_evs[nevs-1].offset;
     max_sec = max_smp_i / R;
